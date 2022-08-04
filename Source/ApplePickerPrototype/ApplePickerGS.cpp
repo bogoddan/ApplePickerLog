@@ -4,77 +4,44 @@
 #include "ApplePickerGS.h"
 #include <ApplePickerPrototype/ApplePickerGM.h>
 
-void AApplePickerGS::UpdateApplesCollected_Implementation()
-{
-}
-
 int32 LogRecord::id = 0;
 
 void AApplePickerGS::BeginPlay()
 {
 	Super::BeginPlay();
-	GetWorldTimerManager().SetTimer(LogsTimerManager, this, &AApplePickerGS::updateLogs, secondsBetweenLogsUpdate, true, 0.5f);
+	GetWorldTimerManager().SetTimer(LogsTimerManager, this, &AApplePickerGS::UpdateLogs, SecondsBetweenLogsUpdate, true, 0.5f);
 }
 
-//void AApplePickerGS::updateLogs()
-//{
-//	GEngine->ClearOnScreenDebugMessages();
-//	FString a("");
-//	a.AppendInt(logs_new.Num());
-//	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, a);
-//	auto log_it = logs_new.FindKey(0);
-//	//while ( log_it != nullptr) {
-//
-//	//	logs_new.Remove(*log_it);
-//	//    log_it = logs_new.FindKey(0);
-//	//}
-//	a.Reset();
-//	a.AppendInt(logs_new.Num());
-//	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, a);
-//	for (auto& it : logs_new) {
-//		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, it.Key.log_message);
-//		it.Value-= secondsBetweenLogsUpdate;
-//	}
-//}
 
-void AApplePickerGS::updateLogs()
-{
-	GEngine->ClearOnScreenDebugMessages();// crear logs
-	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, "Update Logs");
-	
+void AApplePickerGS::UpdateLogs()
+{	
 	TArray<FString> res;
 
-	for (auto& it : logs) {					//	
-		if (shouldLogBeDeleted(it.Value)) {	//delete logs which might expire
-			logs.Remove(it.Key, it.Value);	//
+	for (auto& it : LogsContainer) {		//	
+		if (ShouldLogBeDeleted(it.Value)) {					//delete logs which might expire
+			LogsContainer.Remove(it.Key, it.Value);	//
 		}
 	}
 
-	logs.ValueSort([](const LogRecord& A, const LogRecord& B) {
-		return B.log_message.Compare(A.log_message, ESearchCase::IgnoreCase) < 0;
+	LogsContainer.ValueSort([](const LogRecord& A, const LogRecord& B) {
+		return A.log_message.Compare(B.log_message, ESearchCase::IgnoreCase) < 0;
 		});
 
-	for (auto& it : logs) {
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, it.Value.log_message);
+	for (auto& it : LogsContainer) {
 		res.Add(it.Value.log_message);
-		it.Value.timeRemain-=secondsBetweenLogsUpdate;
+		it.Value.time_remain-=SecondsBetweenLogsUpdate;
 	}
 
 	RefreshLogs(res);
 
 }
 
-void AApplePickerGS::RefreshLogs_Implementation(const TArray<FString>& LogRecords)
+void AApplePickerGS::AddLogRecord(LogTypes type, const LogRecord& log)
 {
-
+	LogsContainer.AddUnique(type, log);
 }
 
-void AApplePickerGS::addLog(LogTypes type, const LogRecord& log)
+bool AApplePickerGS::ShouldLogBeDeleted(const LogRecord& log)
 {
-	logs.AddUnique(type, log);
-}
-
-bool AApplePickerGS::shouldLogBeDeleted(const LogRecord& log)
-{
-	return log.timeRemain <= 0;
+	return log.time_remain <= 0;
 }

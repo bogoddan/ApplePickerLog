@@ -28,8 +28,6 @@ void AApple::BeginPlay()
 	Super::BeginPlay();
 	GameStateRef = Cast<AApplePickerGS>(UGameplayStatics::GetGameState(this));
 
-	//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Бегін плай!"));
-
 }
 
 void AApple::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -39,24 +37,20 @@ void AApple::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherAc
 	}
 	else if (Cast<ABasket>(OtherActor) != nullptr) {
 		processOverlapByBasket();
-
 	}
 	Destroy();
 }
 
 void AApple::processOverlapByBasket()
 {
-	GameStateRef->logs.AddUnique(LogTypes::OverlapByBasket, LogRecord("Basket", 4));
-	//GameStateRef->logs_new.Add(Log("Apple", 5), 8);
-	//GameStateRef->logs_new.Add(Log("Apple", 4), 8);
+	GameStateRef->LogsContainer.AddUnique(LogTypes::OverlapByBasket, LogRecord("Basket", 5));
 	Destroy();
-	Cast<AApplePickerGS>(GetWorld()->GetGameState())->UpdateApplesCollected();
+	GameStateRef->UpdateApplesCollected();
 }
 
 void AApple::processOverlapByFloor()
 {
-	GameStateRef->logs.AddUnique(LogTypes::OverlapByFloor, LogRecord("Apple", 5));
-	//GameStateRef->logs_new.Add(Log("Basket", 5), 7);
+	GameStateRef->LogsContainer.AddUnique(LogTypes::OverlapByFloor, LogRecord("Apple", 15));
 	Cast<AApplePickerGM>(GetWorld()->GetAuthGameMode())->deleteBasket();
 	Destroy();
 }
